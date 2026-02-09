@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+"""
+Traffic Data Collection Script for Bangalore Routes
+Collects real-time traffic data using TomTom API and weather data using OpenWeatherMap API
+"""
+
 import os
 import json
 import requests
@@ -8,11 +14,17 @@ from pathlib import Path
 
 # Configuration
 TOMTOM_API_KEY = os.getenv('TOMTOM_API_KEY')
+OPENWEATHER_API_KEY = os.getenv('OPENWEATHER_API_KEY')
 ROUTES_CONFIG_FILE = 'routes_config.json'
 DATA_DIR = Path('data/raw')
 
-# TomTom API endpoint
+# API endpoints
 TOMTOM_BASE_URL = "https://api.tomtom.com/routing/1/calculateRoute"
+OPENWEATHER_URL = "https://api.openweathermap.org/data/2.5/weather"
+
+# Bangalore coordinates for weather
+BANGALORE_LAT = 12.9716
+BANGALORE_LON = 77.5946
 
 
 def load_routes():
@@ -20,6 +32,60 @@ def load_routes():
     with open(ROUTES_CONFIG_FILE, 'r') as f:
         config = json.load(f)
     return config['routes']
+
+
+def get_weather_data():
+    """Fetch current weather data for Bangalore"""
+    
+    if not OPENWEATHER_API_KEY:
+        print("⚠️  OPENWEATHER_API_KEY not set - weather data will be null")
+        return {
+            'temperature': None,
+            'humidity': None,
+            'weather_condition': None,
+            'rain_1h': None,
+            'wind_speed': None
+        }
+    
+    params = {
+        'lat': BANGALORE_LAT,
+        'lon': BANGALORE_LON,
+        'appid': OPENWEATHER_API_KEY,
+        'units': 'metric'
+    }
+    
+    try:
+        response = requests.get(OPENWEATHER_URL, params=params, timeout=10)
+        
+        if response.status_code == 200:
+            data = response.json()
+            
+            return {
+                'temperature': round(data['main']['temp'], 1),
+                'humidity': data['main']['humidity'],
+                'weather_condition': data['weather'][0]['main'],
+                'rain_1h': data.get('rain', {}).get('1h', 0),
+                'wind_speed': round(data['wind']['speed'], 1)
+            }
+        else:
+            print(f"⚠️  Weather API error: {response.status_code}")
+            return {
+                'temperature': None,
+                'humidity': None,
+                'weather_condition': None,
+                'rain_1h': None,
+                'wind_speed': None
+            }
+            
+    except Exception as e:
+        print(f"⚠️  Weather fetch error: {str(e)}")
+        return {
+            'temperature': None,
+            'humidity': None,
+            'weather_condition': None,
+            'rain_1h': None,
+            'wind_speed': None
+        }
 
 
 def get_traffic_data(origin_lat, origin_lon, dest_lat, dest_lon, api_key, max_retries=3):
@@ -79,13 +145,21 @@ def get_traffic_data(origin_lat, origin_lon, dest_lat, dest_lon, api_key, max_re
 
 
 def collect_all_routes():
-    """Collect traffic data for all routes"""
+    """Collect traffic data for all routes with weather data"""
     
     if not TOMTOM_API_KEY:
         print("❌ ERROR: TOMTOM_API_KEY environment variable not set!")
         return
     
     print(f"🚗 Starting traffic data collection at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    
+    # Get weather data once (same for all routes)
+    print(f"🌤️  Fetching weather data...")
+    weather_data = get_weather_data()
+    if weather_data['temperature'] is not None:
+        print(f"   ✅ Weather: {weather_data['temperature']}°C, {weather_data['weather_condition']}, {weather_data['humidity']}% humidity")
+    else:
+        print(f"   ⚠️  Weather data unavailable")
     
     routes = load_routes()
     print(f"📍 Loaded {len(routes)} routes")
@@ -108,6 +182,7 @@ def collect_all_routes():
         )
         
         if traffic_data:
+            # Combine traffic data with weather data
             traffic_data.update({
                 'timestamp': timestamp_str,
                 'route_name': route['name'],
@@ -116,7 +191,13 @@ def collect_all_routes():
                 'destination': route['destination']['name'],
                 'hour': now.hour,
                 'day_of_week': now.strftime('%A'),
-                'is_weekend': 1 if now.weekday() >= 5 else 0
+                'is_weekend': 1 if now.weekday() >= 5 else 0,
+                # Add weather columns
+                'temperature': weather_data['temperature'],
+                'humidity': weather_data['humidity'],
+                'weather_condition': weather_data['weather_condition'],
+                'rain_1h': weather_data['rain_1h'],
+                'wind_speed': weather_data['wind_speed']
             })
             
             collected_data.append(traffic_data)
@@ -135,7 +216,13 @@ def collect_all_routes():
                 'distance_km': None,
                 'duration_minutes': None,
                 'traffic_delay_minutes': None,
-                'status': 'failed'
+                'status': 'failed',
+                # Add weather columns even for failed traffic data
+                'temperature': weather_data['temperature'],
+                'humidity': weather_data['humidity'],
+                'weather_condition': weather_data['weather_condition'],
+                'rain_1h': weather_data['rain_1h'],
+                'wind_speed': weather_data['wind_speed']
             })
         
         time.sleep(1)
@@ -143,10 +230,12 @@ def collect_all_routes():
     if collected_data:
         df = pd.DataFrame(collected_data)
         
+        # Updated column order with weather data
         column_order = [
             'timestamp', 'route_name', 'distance_km', 'duration_minutes', 
             'traffic_delay_minutes', 'status', 'route_id', 'origin', 
-            'destination', 'hour', 'day_of_week', 'is_weekend'
+            'destination', 'hour', 'day_of_week', 'is_weekend',
+            'temperature', 'humidity', 'weather_condition', 'rain_1h', 'wind_speed'
         ]
         df = df[column_order]
         
@@ -165,7 +254,7 @@ def collect_all_routes():
         print(f"📈 Summary: {success_count}/{len(routes)} routes collected successfully")
         
         print(f"\n📋 Sample data:")
-        print(df[['route_name', 'duration_minutes', 'traffic_delay_minutes']].to_string(index=False))
+        print(df[['route_name', 'duration_minutes', 'traffic_delay_minutes', 'temperature', 'weather_condition']].to_string(index=False))
     else:
         print("\n❌ No data collected")
     
