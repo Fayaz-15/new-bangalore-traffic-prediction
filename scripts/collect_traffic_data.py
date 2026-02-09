@@ -11,6 +11,7 @@ import pandas as pd
 from datetime import datetime
 import time
 from pathlib import Path
+import pytz
 
 # Configuration
 TOMTOM_API_KEY = os.getenv('TOMTOM_API_KEY')
@@ -25,6 +26,9 @@ OPENWEATHER_URL = "https://api.openweathermap.org/data/2.5/weather"
 # Bangalore coordinates for weather
 BANGALORE_LAT = 12.9716
 BANGALORE_LON = 77.5946
+
+# IST timezone
+IST = pytz.timezone('Asia/Kolkata')
 
 
 def load_routes():
@@ -151,7 +155,10 @@ def collect_all_routes():
         print("❌ ERROR: TOMTOM_API_KEY environment variable not set!")
         return
     
-    print(f"🚗 Starting traffic data collection at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    # Get current time in IST
+    now_ist = datetime.now(IST)
+    
+    print(f"🚗 Starting traffic data collection at {now_ist.strftime('%Y-%m-%d %H:%M:%S IST')}")
     
     # Get weather data once (same for all routes)
     print(f"🌤️  Fetching weather data...")
@@ -164,9 +171,8 @@ def collect_all_routes():
     routes = load_routes()
     print(f"📍 Loaded {len(routes)} routes")
     
-    now = datetime.now()
-    timestamp_str = now.strftime('%Y-%m-%d %H:%M:%S')
-    date_str = now.strftime('%Y%m%d')
+    timestamp_str = now_ist.strftime('%Y-%m-%d %H:%M:%S')
+    date_str = now_ist.strftime('%Y%m%d')
     
     collected_data = []
     
@@ -189,9 +195,9 @@ def collect_all_routes():
                 'route_id': route['id'],
                 'origin': route['origin']['name'],
                 'destination': route['destination']['name'],
-                'hour': now.hour,
-                'day_of_week': now.strftime('%A'),
-                'is_weekend': 1 if now.weekday() >= 5 else 0,
+                'hour': now_ist.hour,
+                'day_of_week': now_ist.strftime('%A'),
+                'is_weekend': 1 if now_ist.weekday() >= 5 else 0,
                 # Add weather columns
                 'temperature': weather_data['temperature'],
                 'humidity': weather_data['humidity'],
@@ -210,9 +216,9 @@ def collect_all_routes():
                 'route_id': route['id'],
                 'origin': route['origin']['name'],
                 'destination': route['destination']['name'],
-                'hour': now.hour,
-                'day_of_week': now.strftime('%A'),
-                'is_weekend': 1 if now.weekday() >= 5 else 0,
+                'hour': now_ist.hour,
+                'day_of_week': now_ist.strftime('%A'),
+                'is_weekend': 1 if now_ist.weekday() >= 5 else 0,
                 'distance_km': None,
                 'duration_minutes': None,
                 'traffic_delay_minutes': None,
@@ -258,7 +264,7 @@ def collect_all_routes():
     else:
         print("\n❌ No data collected")
     
-    print(f"\n🏁 Collection completed at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"\n🏁 Collection completed at {now_ist.strftime('%Y-%m-%d %H:%M:%S IST')}")
 
 
 if __name__ == "__main__":
