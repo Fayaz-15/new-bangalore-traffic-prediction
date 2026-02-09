@@ -2,12 +2,10 @@ name: Collect Traffic Data
 
 on:
   schedule:
-    # Run every hour from 6 AM to 11 PM IST
-    # IST is UTC+5:30, so we need to adjust:
-    # 6 AM IST = 12:30 AM UTC (00:30)
-    # 11 PM IST = 5:30 PM UTC (17:30)
-    # This runs at 30 minutes past each hour from 00:30 to 17:30 UTC
-    - cron: '30 0-17 * * *'
+    # Run every hour, 24/7 (all day, every day)
+    # Runs at 30 minutes past each hour (00:30, 01:30, 02:30, ... 23:30 UTC)
+    # This gives 24 data points per day
+    - cron: '30 * * * *'
     
   workflow_dispatch:  # Allow manual triggering from GitHub UI
   
@@ -40,6 +38,7 @@ jobs:
         run: |
           echo "requests>=2.31.0" > requirements.txt
           echo "pandas>=2.0.0" >> requirements.txt
+          echo "pytz>=2023.3" >> requirements.txt
       
       - name: Install dependencies
         run: |
