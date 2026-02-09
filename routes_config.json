@@ -1,0 +1,102 @@
+{
+  "routes": [
+    {
+      "id": 1,
+      "name": "ORR",
+      "origin": {
+        "name": "Marathahalli",
+        "lat": 12.9591,
+        "lon": 77.6974
+      },
+      "destination": {
+        "name": "Silk Board",
+        "lat": 12.9166,
+        "lon": 77.6229
+      }
+    },
+    {
+      "id": 2,
+      "name": "Whitefield-Koramangala",
+      "origin": {
+        "name": "Whitefield",
+        "lat": 12.9698,
+        "lon": 77.7500
+      },
+      "destination": {
+        "name": "Koramangala",
+        "lat": 12.9352,
+        "lon": 77.6245
+      }
+    },
+    {
+      "id": 3,
+      "name": "BTM-ECity",
+      "origin": {
+        "name": "BTM Layout",
+        "lat": 12.9165,
+        "lon": 77.6101
+      },
+      "destination": {
+        "name": "Electronic City",
+        "lat": 12.8456,
+        "lon": 77.6603
+      }
+    },
+    {
+      "id": 4,
+      "name": "Hebbal-Bellandur",
+      "origin": {
+        "name": "Hebbal",
+        "lat": 13.0358,
+        "lon": 77.5970
+      },
+      "destination": {
+        "name": "Bellandur",
+        "lat": 12.9266,
+        "lon": 77.6763
+      }
+    },
+    {
+      "id": 5,
+      "name": "Airport-MG Road",
+      "origin": {
+        "name": "Kempegowda Airport",
+        "lat": 13.1986,
+        "lon": 77.7066
+      },
+      "destination": {
+        "name": "MG Road",
+        "lat": 12.9716,
+        "lon": 77.5946
+      }
+    },
+    {
+      "id": 6,
+      "name": "Indiranagar-Brigade",
+      "origin": {
+        "name": "Indiranagar",
+        "lat": 12.9784,
+        "lon": 77.6408
+      },
+      "destination": {
+        "name": "Brigade Road",
+        "lat": 12.9716,
+        "lon": 77.6075
+      }
+    },
+    {
+      "id": 7,
+      "name": "Yeshwanthpur-Jayanagar",
+      "origin": {
+        "name": "Yeshwanthpur",
+        "lat": 13.0280,
+        "lon": 77.5385
+      },
+      "destination": {
+        "name": "Jayanagar",
+        "lat": 12.9250,
+        "lon": 77.5838
+      }
+    }
+  ]
+}
