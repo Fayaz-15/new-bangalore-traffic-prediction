@@ -2,16 +2,22 @@ name: Collect Traffic Data
 
 on:
   schedule:
-    # Run from 6 AM to midnight (hours: 6,7,8,9,...,22,23,0)
-    - cron: '0 0,6-23 * * *'
+    # Run every hour from 6 AM to 11 PM IST
+    # IST is UTC+5:30, so we need to adjust:
+    # 6 AM IST = 12:30 AM UTC (00:30)
+    # 11 PM IST = 5:30 PM UTC (17:30)
+    # This runs at 30 minutes past each hour from 00:30 to 17:30 UTC
+    - cron: '30 0-17 * * *'
     
-  workflow_dispatch:
+  workflow_dispatch:  # Allow manual triggering from GitHub UI
   
   push:
     branches:
       - main
     paths:
       - '.github/workflows/collect_traffic.yml'
+      - 'scripts/collect_traffic_data.py'
+      - 'routes_config.json'
 
 jobs:
   collect-data:
@@ -22,16 +28,37 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0  # Fetch all history for proper commits
       
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: Create requirements file
+        run: |
+          echo "requests>=2.31.0" > requirements.txt
+          echo "pandas>=2.0.0" >> requirements.txt
       
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests pandas
+          pip install -r requirements.txt
+      
+      - name: Verify API keys are set
+        env:
+          TOMTOM_API_KEY: ${{ secrets.TOMTOM_API_KEY }}
+          OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
+        run: |
+          if [ -z "$TOMTOM_API_KEY" ]; then
+            echo "❌ ERROR: TOMTOM_API_KEY secret not set!"
+            exit 1
+          fi
+          if [ -z "$OPENWEATHER_API_KEY" ]; then
+            echo "⚠️  WARNING: OPENWEATHER_API_KEY secret not set - weather data will be null"
+          fi
+          echo "✅ API keys verified"
       
       - name: Collect traffic and weather data
         env:
@@ -40,15 +67,49 @@ jobs:
         run: |
           python scripts/collect_traffic_data.py
       
-      - name: Commit and push data
+      - name: Check for changes
+        id: check_changes
         run: |
-          git config --local user.email "actions@github.com"
-          git config --local user.name "GitHub Actions"
           git add data/raw/*.csv
-          
           if git diff --staged --quiet; then
-            echo "No changes to commit"
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "No new data to commit"
           else
-            git commit -m "Auto: Traffic data collection $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
-            git push
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "New data ready to commit"
           fi
+      
+      - name: Commit and push data
+        if: steps.check_changes.outputs.has_changes == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          # Create commit message with timestamp in IST
+          IST_TIME=$(TZ='Asia/Kolkata' date +'%Y-%m-%d %H:%M:%S IST')
+          git commit -m "Auto: Traffic data collection - $IST_TIME"
+          
+          # Push with retry logic
+          max_retries=3
+          retry_count=0
+          until git push origin main || [ $retry_count -eq $max_retries ]; do
+            retry_count=$((retry_count+1))
+            echo "Push failed, retrying ($retry_count/$max_retries)..."
+            sleep 5
+            git pull --rebase origin main
+          done
+          
+          if [ $retry_count -eq $max_retries ]; then
+            echo "❌ Failed to push after $max_retries attempts"
+            exit 1
+          fi
+          
+          echo "✅ Data pushed successfully"
+      
+      - name: Upload CSV as artifact (for debugging)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: traffic-data-${{ github.run_number }}
+          path: data/raw/*.csv
+          retention-days: 7
