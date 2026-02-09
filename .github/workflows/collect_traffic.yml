@@ -1,1 +1,53 @@
+name: Collect Traffic Data
 
+on:
+  schedule:
+    # Run every hour (24/7 collection)
+    - cron: '0 6-23 * * *'
+    
+  workflow_dispatch:
+  
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/collect_traffic.yml'
+
+jobs:
+  collect-data:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests pandas
+      
+      - name: Collect traffic data
+        env:
+          TOMTOM_API_KEY: ${{ secrets.TOMTOM_API_KEY }}
+        run: |
+          python scripts/collect_traffic_data.py
+      
+      - name: Commit and push data
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub Actions"
+          git add data/raw/*.csv
+          
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Auto: Traffic data collection $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+            git push
+          fi
