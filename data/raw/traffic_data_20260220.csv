@@ -6,3 +6,10 @@ timestamp,route_name,distance_km,duration_minutes,traffic_delay_minutes,status,r
 2026-02-20 00:45:48,Airport-MG Road,34.98,44.0,0.0,success,5,Kempegowda Airport,MG Road,0,Friday,0,21.1,77,Clear,0,9.4
 2026-02-20 00:45:48,Indiranagar-Brigade,4.26,12.7,0.0,success,6,Indiranagar,Brigade Road,0,Friday,0,21.1,77,Clear,0,9.4
 2026-02-20 00:45:48,Yeshwanthpur-Jayanagar,19.32,33.1,0.0,success,7,Yeshwanthpur,Jayanagar,0,Friday,0,21.1,77,Clear,0,9.4
+2026-02-20 01:23:52,ORR,14.56,28.6,0.0,success,1,Marathahalli,Silk Board,1,Friday,0,20.7,78,Clear,0,8.9
+2026-02-20 01:23:52,Whitefield-Koramangala,16.93,32.4,0.0,success,2,Whitefield,Koramangala,1,Friday,0,20.7,78,Clear,0,8.9
+2026-02-20 01:23:52,BTM-ECity,12.37,16.5,0.0,success,3,BTM Layout,Electronic City,1,Friday,0,20.7,78,Clear,0,8.9
+2026-02-20 01:23:52,Hebbal-Bellandur,22.18,47.3,0.0,success,4,Hebbal,Bellandur,1,Friday,0,20.7,78,Clear,0,8.9
+2026-02-20 01:23:52,Airport-MG Road,34.98,43.7,0.0,success,5,Kempegowda Airport,MG Road,1,Friday,0,20.7,78,Clear,0,8.9
+2026-02-20 01:23:52,Indiranagar-Brigade,4.26,12.7,0.0,success,6,Indiranagar,Brigade Road,1,Friday,0,20.7,78,Clear,0,8.9
+2026-02-20 01:23:52,Yeshwanthpur-Jayanagar,19.32,33.1,0.0,success,7,Yeshwanthpur,Jayanagar,1,Friday,0,20.7,78,Clear,0,8.9
