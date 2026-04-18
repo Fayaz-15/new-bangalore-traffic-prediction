@@ -1,0 +1,8 @@
+timestamp,route_name,distance_km,duration_minutes,traffic_delay_minutes,status,route_id,origin,destination,hour,day_of_week,is_weekend,temperature,humidity,weather_condition,rain_1h,wind_speed
+2026-04-19 00:42:35,ORR,14.57,35.7,6.9,success,1,Marathahalli,Silk Board,0,Sunday,1,26.5,56,Clouds,0,4.0
+2026-04-19 00:42:35,Whitefield-Koramangala,16.93,32.2,0.0,success,2,Whitefield,Koramangala,0,Sunday,1,26.5,56,Clouds,0,4.0
+2026-04-19 00:42:35,BTM-ECity,12.37,19.5,3.0,success,3,BTM Layout,Electronic City,0,Sunday,1,26.5,56,Clouds,0,4.0
+2026-04-19 00:42:35,Hebbal-Bellandur,26.55,45.6,0.0,success,4,Hebbal,Bellandur,0,Sunday,1,26.5,56,Clouds,0,4.0
+2026-04-19 00:42:35,Airport-MG Road,34.99,43.9,0.0,success,5,Kempegowda Airport,MG Road,0,Sunday,1,26.5,56,Clouds,0,4.0
+2026-04-19 00:42:35,Indiranagar-Brigade,4.26,12.6,0.0,success,6,Indiranagar,Brigade Road,0,Sunday,1,26.5,56,Clouds,0,4.0
+2026-04-19 00:42:35,Yeshwanthpur-Jayanagar,19.32,32.9,0.0,success,7,Yeshwanthpur,Jayanagar,0,Sunday,1,26.5,56,Clouds,0,4.0
